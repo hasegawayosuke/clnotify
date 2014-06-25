@@ -1,0 +1,26 @@
+{
+	"name" : "Cybozu Live Notifier",
+	"version" : "0.1",
+	"description" : "Cybozu Live Notifier",
+	"manifest_version" : 2,
+	"icons" : {"48" : "icon48.png", "128" : "icon128.png" },
+    "permissions" : [
+		"storage", 
+		"tabs",
+		"alarms",
+		"notifications",
+		"https://cybozulive.com/*",
+		"https://api.cybozulive.com/*"
+    ],
+	"browser_action": {
+		"default_icon": "icon16.png",
+		"default_popup": "popup.html",
+		"default_title": "Cybozu Live Helper"
+	},
+	"background" : {
+		"scripts" : [ "util.js", "oauth.js", "sha1.js", "eventpage.js" ],
+		"persistent" : true
+	},
+	"options_page" : "config.html"
+}
+

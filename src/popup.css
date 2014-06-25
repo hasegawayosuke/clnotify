@@ -1,0 +1,34 @@
+html{
+	background-color: #ececec;
+	padding: 0px;
+	margin: 0px;
+
+}
+body{
+	width: 18em;
+	font-size:10pt;
+	margin: 0pt;
+	padding: 0pt;
+	font-family: "Meiryo UI";
+}
+
+
+
+ul.menu{
+	margin: 2px 2px 2px 2px;
+	padding: 5px 0px 5px 0px;
+	list-style-type: none;
+}
+
+li.menuitem{
+	margin: 0px 2px 0px 2px;
+	padding: 4px 4px 4px 4px;
+
+}
+
+li.menuitem:hover{
+	background-color: #9c9cde;
+	cursor:default;
+	color:white;
+
+}
