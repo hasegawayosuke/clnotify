@@ -1,5 +1,5 @@
 document.addEventListener( "DOMContentLoaded", function(){
-    cl.load( function(){
+    cl.load().then( function(){
         if( cl.config.email ) $( "mail" ).value = cl.config.email;
         if( cl.config.password ) $( "pass" ).value = cl.config.password;
         if( cl.config.consumerKey ) $( "ckey" ).value = cl.config.consumerKey;
@@ -53,7 +53,7 @@ document.addEventListener( "DOMContentLoaded", function(){
                     var responseParams = OAuth.getParameterMap(xhr.responseText);
                     $( "atoken" ).value = cl.config.token = responseParams['oauth_token'];
                     $( "asecret" ).value = cl.config.tokenSecret = responseParams['oauth_token_secret'];
-                    cl.save( function(){ alert( "保存しました。Chromeを再起動してください。" );} );
+                    cl.save().then( function(){ alert( "保存しました。Chromeを再起動してください。" );} );
                 }else{
                     alert( "failed to get access-token.\n" + xhr.status + "\n" + xhr.statusText );
                 }
