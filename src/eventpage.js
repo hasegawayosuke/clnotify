@@ -77,20 +77,24 @@ var notify = (function(){
                     }
                     return r;
                 })( xhr.responseXML );
-                chrome.notifications.onButtonClicked.addListener( function( id, index ){
-                    if( entries[ id ] != undefined && entries[ id ].urls != undefined ){
-                        var url = entries[ id ].urls[ index ];
-                        if( url.match( /^https?:\/\// ) ) {
+                if( !chrome.notifications.onButtonClicked.hasListeners() ){
+                    chrome.notifications.onButtonClicked.addListener( function( id, index ){
+                        if( entries[ id ] != undefined && entries[ id ].urls != undefined ){
+                            var url = entries[ id ].urls[ index ];
+                            if( url.match( /^https?:\/\// ) ) {
+                                cl.tab( url );
+                            }
+                        }
+                    } );
+                }
+                if( !chrome.notifications.onClicked.hasListeners() ){
+                    chrome.notifications.onClicked.addListener( function( id ){
+                        if( entries[ id ] != undefined ){
+                            var url = "https://cybozulive.com/" + id.replace( /:/g, "_" ) + "/top/top";
                             cl.tab( url );
                         }
-                    }
-                } );
-                chrome.notifications.onClicked.addListener( function( id ){
-                    if( entries[ id ] != undefined ){
-                        var url = "https://cybozulive.com/" + id.replace( /:/g, "_" ) + "/top/top";
-                        cl.tab( url );
-                    }
-                } );
+                    } );
+                }
                 chrome.notifications.getAll( function( notifies ){
                     for( var id in notifies ){
                         chrome.notifications.clear( id, function(){} );
