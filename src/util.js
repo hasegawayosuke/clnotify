@@ -83,10 +83,12 @@ var cl = (function (){
                     if( xhr.status == 200 ){
                         resolve( xhr );
                     }else{
+                        console.error( xhr.status,  xhr.statusText );
                         reject( new Error( xhr.statusText ) );
                     }
                 }
                 xhr.onerror = function(){
+                    console.error( xhr.statusText );
                     reject( new Error( xhr.statusText ) );
                 }
                 xhr.send( null );

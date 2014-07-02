@@ -31,6 +31,24 @@ var iconCache = (function(){
 })();
 
 var notify = (function(){
+    var urls = {};
+
+    chrome.notifications.onButtonClicked.addListener( function( id, index ){
+        if( urls[ id ] !== undefined && urls[ id ][ index ] != undefined ){
+            var url = urls[ id ][ index ];
+            if( url.match( /^https?:\/\// ) ) {
+                cl.tab( url );
+            }
+        }
+    } );
+    chrome.notifications.onClicked.addListener( function( id ){
+        alert("click:"+id);
+        if( id.match( /^[\d]+:[\d]+$/ ) ){
+            var url = "https://cybozulive.com/" + id.replace( /:/g, "_" ) + "/top/top";
+            cl.tab( url );
+        }
+    } );
+
     return function(){
         var url = cl.url + "/api/notification/V2";
         if( cl.config.token == "" || cl.config.tokenSecret == "" ){
@@ -41,6 +59,7 @@ var notify = (function(){
             var gid, entries;
             try{
                 //console.log( xhr.responseXML );
+                urls = {};
                 entries = (function getEntries( xml ){
                     var i, j, entries = xml.getElementsByTagName( "entry" ) || [];
                     var group, topic, summary, url, gid, uid;
@@ -55,46 +74,25 @@ var notify = (function(){
 
                         if( r[ gid ] === undefined ){
                             r[ gid ] = { 
-                                opt : {
-                                    type : "basic",
-                                    isClickable : true,
-                                    iconUrl : chrome.extension.getURL( "/icon48.png" ), 
-                                    title : group,
-                                    message : "",
-                                    buttons : []
-                                },
-                                urls: []
+                                type : "basic",
+                                isClickable : true,
+                                iconUrl : chrome.extension.getURL( "/icon48.png" ), 
+                                title : group,
+                                message : "",
+                                buttons : []
                             };
                         }
-                        (function( opt, title ){
+                        (function( opt, index ){
                             iconCache.icon( "user", uid ).then( function( icon ){
-                                opt.buttons.push( { title: title, iconUrl : icon.url } );
-                            } ).catch( function( e ){
-                                opt.buttons.push( { title: title, iconUrl : chrome.extension.getURL( "/icon16.png" ) } );
+                                opt.buttons[ index ].iconUrl = icon.url;
                             } );
-                        })( r[ gid ].opt, topic + " - \n" + summary );
-                        r[ gid ].urls.push( url );
+                        })( r[ gid ], r[ gid ].buttons.push( { title: topic + " - \n" + summary, iconUrl: chrome.extension.getURL( "/icon16.png" ) } ) -1 );
+
+                        if( urls[ gid ] === undefined ) urls[ gid ] = [];
+                        urls[ gid ].push( url );
                     }
                     return r;
                 })( xhr.responseXML );
-                if( !chrome.notifications.onButtonClicked.hasListeners() ){
-                    chrome.notifications.onButtonClicked.addListener( function( id, index ){
-                        if( entries[ id ] != undefined && entries[ id ].urls != undefined ){
-                            var url = entries[ id ].urls[ index ];
-                            if( url.match( /^https?:\/\// ) ) {
-                                cl.tab( url );
-                            }
-                        }
-                    } );
-                }
-                if( !chrome.notifications.onClicked.hasListeners() ){
-                    chrome.notifications.onClicked.addListener( function( id ){
-                        if( entries[ id ] != undefined ){
-                            var url = "https://cybozulive.com/" + id.replace( /:/g, "_" ) + "/top/top";
-                            cl.tab( url );
-                        }
-                    } );
-                }
                 chrome.notifications.getAll( function( notifies ){
                     for( var id in notifies ){
                         chrome.notifications.clear( id, function(){} );
@@ -102,8 +100,8 @@ var notify = (function(){
                 } );
                 for( gid in entries ){
                     iconCache.icon( "group", gid ).then( function( icon ){
-                        entries[ icon.id ].opt.iconUrl = icon.url;
-                        chrome.notifications.create( icon.id, entries[ icon.id ].opt, function(id){} );
+                        entries[ icon.id ].iconUrl = icon.url;
+                        chrome.notifications.create( icon.id, entries[ icon.id ], function(id){} );
                     } );
                 }
             }
