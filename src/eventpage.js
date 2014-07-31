@@ -32,6 +32,7 @@ var iconCache = (function(){
 
 var notify = (function(){
     var urls = {};
+    var audio;
 
     chrome.notifications.onButtonClicked.addListener( function( id, index ){
         if( urls[ id ] !== undefined && urls[ id ][ index ] != undefined ){
@@ -42,21 +43,25 @@ var notify = (function(){
         }
     } );
     chrome.notifications.onClicked.addListener( function( id ){
-        alert("click:"+id);
         if( id.match( /^[\d]+:[\d]+$/ ) ){
             var url = "https://cybozulive.com/" + id.replace( /:/g, "_" ) + "/top/top";
             cl.tab( url );
         }
     } );
 
+    audio = new Audio( "" );
+    audio.loop = false;
+    audio.preload = "auto";
+
     return function(){
+        /**/
         var url = cl.url + "/api/notification/V2";
         if( cl.config.token == "" || cl.config.tokenSecret == "" ){
             console.error( "no access token" );
             return;
         }
         cl.XHR( "GET", url, {"unconfirmed":"true", "max-results" : "100", "category" : "BOARD" } ).then( function( xhr ){
-            var gid, entries;
+            var gid, entries, sound = true;
             try{
                 //console.log( xhr.responseXML );
                 urls = {};
@@ -102,6 +107,18 @@ var notify = (function(){
                     iconCache.icon( "group", gid ).then( function( icon ){
                         entries[ icon.id ].iconUrl = icon.url;
                         chrome.notifications.create( icon.id, entries[ icon.id ], function(id){} );
+                        if( sound && cl.config.sound ){
+                            if( cl.config.sound == 1 ){
+                                audio.src = chrome.extension.getURL( "/decision3.mp3" );
+                            }else if( cl.config.sound == 2 ){
+                                audio.src = chrome.extension.getURL( "/hanada-voice.aac" );
+                            }else if( cl.config.sound == 3 ){
+                                audio.src = cl.config.soundUrl;
+                            }
+                            audio.load();
+                            audio.play();
+                            sound = false;
+                        }
                     } );
                 }
             }
@@ -115,9 +132,37 @@ var notify = (function(){
 })();
 
 
-//chrome.runtime.onInstalled.addListener( function(){ alert(1);cl.load().then( handler ); } );
-//chrome.runtime.onStartup.addListener( function(){ alert(2); cl.load().then( handler ); } );
+hookHeaderReceived = function(){
+    // TODO: 直接開くのを設定により変えられるように。
+    var extensions = [ "pdf", "png", "jpeg", "jpg", "bmp", "gif" ];
+    var handler = function( details ){
+        var r = [];
+        details.responseHeaders.forEach( function( headerPair ){
+            var m, ext;
+            if( headerPair.name.toLowerCase() === "content-disposition" ){
+                m = /filename=\"([^\"]+)\"/.exec( headerPair.value );
+                if( m !== null ){
+                    ext = /\.([^\.]+)$/.exec( m[ 1 ] );
+                    if( ext !== null ){
+                        if( extensions.indexOf( ext[ 1 ] ) !== -1 ){
+                            headerPair.value = headerPair.value.replace( /^attachment;/i, "inline;" );
+                        }
+                    }
+                }
+            }
+            r.push( headerPair );
+        } );
+        return { "responseHeaders" : r };
+    }
+    chrome.webRequest.onHeadersReceived.addListener( 
+        handler, 
+        { "urls" : ["https://cybozulive.com/*/gwCabinet/downloadFileDirect*"] },
+        [ "blocking", "responseHeaders" ] 
+    );
+};
+
 cl.load().then( function(){
+    hookHeaderReceived();
     notify();
     chrome.alarms.onAlarm.addListener( notify );
     chrome.alarms.create( "cylive_alarm", { "periodInMinutes" : 2 } );

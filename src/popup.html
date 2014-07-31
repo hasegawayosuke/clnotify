@@ -6,9 +6,17 @@
 </head>
 <body>
 <ul class="menu">
-    <li class="menuitem" id="top">サイボウズLiveトップ</li>
+    <li class="menuitem clickable" id="top">サイボウズLiveトップ</li>
     <li><hr></li>
-    <li class="menuitem" id="config">Cybozu Live Notifierの設定</li>
+    <li class="menuitem">
+    <div style="display:none">
+        <input type="checkbox" id="mute">
+        <label for="mute">通知をミュート </label>&nbsp;&nbsp;
+        <input type="number" id="mutehour" min="1" max="24" required value="1" disabled><label for="mutehour" id="mutehourlabel" disabled>時間</label>
+    </div>
+    </li>
+    <li><hr></li>
+    <li class="menuitem clickable" id="config">Cybozu Live Notifierの設定</li>
 </ul>
 <script src="util.js"></script>
 <script src="popup.js"></script>

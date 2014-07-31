@@ -23,12 +23,14 @@ var cl = (function (){
             consumerKey : "",
             consumerSecret : "",
             token : "",
-            tokenSecret : ""
+            tokenSecret : "",
+            sound : 0,
         },
         url : "https://api.cybozulive.com",
         save : function(){
+            var _this = this;
             return new Promise( function( resolve, reject ){
-                chrome.storage.sync.set( { "config" : this.config }, function(){
+                chrome.storage.sync.set( { "config" : _this.config }, function(){
                     try{
                         resolve();
                     }catch( e ){
@@ -38,12 +40,21 @@ var cl = (function (){
             } );
         },
         load : function(){
+            var _this = this;
             return new Promise( function( resolve, reject ){
                 chrome.storage.sync.get( "config", function ( items ){
-                    try{
-                        for( var key in obj.config ){
-                            if( items.config[ key ] ) obj.config[ key ] = items.config[ key ];
+                    var copy = function( dst, src ){
+                        for( var key in src ){
+                            if( typeof( src[ key ] ) == "object" ){
+                                dst[ key ] = {};
+                                copy( dst[ key ], src[ key ] );
+                            }else{
+                                dst[ key ] = src[ key ];
+                            }
                         }
+                    };
+                    try{
+                        copy( _this.config, items.config );
                         resolve();
                     }catch( e ){
                         reject( e );

@@ -14,5 +14,16 @@ document.addEventListener( "DOMContentLoaded", function(){
         evt.preventDefault();
     }, false );
     */
+    $( "mute" ).addEventListener( "click", function( evt ){
+        var enabled = $("mute").checked;
+        if( enabled ){
+            $( "mutehour" ).removeAttribute( "disabled" );
+            $( "mutehourlabel" ).removeAttribute( "disabled" );
+        }else{
+            $( "mutehour" ).setAttribute( "disabled", true );
+            $( "mutehourlabel" ).setAttribute( "disabled", true );
+        }
+        //evt.preventDefault();
+    }, false );
 
 }, false );

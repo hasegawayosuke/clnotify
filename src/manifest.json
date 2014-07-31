@@ -8,6 +8,8 @@
 		"storage", 
 		"tabs",
 		"alarms",
+		"webRequest", 
+		"webRequestBlocking",
 		"notifications",
 		"https://cybozulive.com/*",
 		"https://api.cybozulive.com/*"
@@ -21,6 +23,12 @@
 		"scripts" : [ "util.js", "oauth.js", "sha1.js", "eventpage.js" ],
 		"persistent" : true
 	},
+	"content_scripts" : [
+		{	
+			"matches" : [ "https://cybozulive.com/*" ],
+			"js" : [ "util.js", "content.js" ]
+		}
+	],
 	"options_page" : "config.html"
 }
 
