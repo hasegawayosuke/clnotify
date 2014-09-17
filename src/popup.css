@@ -38,3 +38,17 @@ li.clickable:hover{
 label[disabled]{
     color:gray;
 }
+
+#mutestate{
+	padding: 2px 2px 2px 2em;
+}
+#muteoption{
+	padding: 2px 2px 2px 2em;
+}
+ul.mutemenu{
+	list-style-type: none;
+	padding: 0px;
+}
+ul.mutemenu li{
+	margin-left: 0px;
+}

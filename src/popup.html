@@ -9,10 +9,17 @@
     <li class="menuitem clickable" id="top">サイボウズLiveトップ</li>
     <li><hr></li>
     <li class="menuitem">
-    <div style="display:none">
-        <input type="checkbox" id="mute">
-        <label for="mute">通知をミュート </label>&nbsp;&nbsp;
-        <input type="number" id="mutehour" min="1" max="24" required value="1" disabled><label for="mutehour" id="mutehourlabel" disabled>時間</label>
+    <div style="x-display:none">
+		<input type="checkbox" id="mute">
+		<label for="mute">通知をミュート </label>&nbsp;&nbsp;
+		<div id="mutestate"><span id="mutelimit"></span>まで</div>
+		<div id="muteoption">
+			<ul class="mutemenu">
+				<li><input type="radio" id="mute1h" name="mutespan" checked><label for="mute1h">1時間</label></li>
+				<li><input type="radio" id="mute8h" name="mutespan"><label for="mute8h">8時間</label></li>
+				<li><input type="radio" id="muteforever" name="mutespan"><label for="muteforever">解除するまで</label></li>
+			</ul>
+		</div>
     </div>
     </li>
     <li><hr></li>

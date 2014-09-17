@@ -62,6 +62,11 @@ div.frame{
 	border: solid 1px silver;
 
 }
+div#grouplist{
+	overflow: scroll;
+	height: 15em;
+}
+
 </style>
 </head>
 <body>
@@ -70,10 +75,11 @@ div.frame{
 <div>
 	<input type="button" value="設定を保存" id="save">
 </div>
-<div class="tab" id="tab1">xAuth</div>
-<div class="tab" id="tab2">通知設定</div>
+<div class="tab" >xAuth</div>
+<div class="tab" >通知設定</div>
+<div class="tab" >その他の設定</div>
 <div class="clear"></div>
-<div class="tabpage" id="tabpage1">
+<div class="tabpage">
 <div>
 Cybozu Live Notifierを利用するためには、初回に
 <ol>
@@ -122,7 +128,7 @@ Cybozu Live Notifierを利用するためには、初回に
 </div>
 
 </div>
-<div class="tabpage" id="tabpage2">
+<div class="tabpage" >
 	<div class="section">
 		<h2>通知音</h2>
 		<input type="radio" name="sound" id="soundtype0"><label for="soundtype0">通知音オフ</label><br>
@@ -131,7 +137,41 @@ Cybozu Live Notifierを利用するためには、初回に
 		<input type="radio" name="sound" id="soundtype3"><label for="soundtype3">URL</label>
 		<input type="url" id="soundurl" size="80" placeholder="サウンドファイルのURL">
 	</div>
+	<div class="section">
+		<h2></h2>
+		<input type="checkbox" id="notifyonce"><label for="notifyonce">同じ通知は2回以上表示しない</label>
+	</div>
+	<div class="section">
+		<h2>通知対象のグループ </h2>
+		<input type="button" value="グループ一覧を更新" id="updategroup"> <input type="button" value="全て選択" id="checkall"> <input type="button" value="全て解除" id="uncheckall"> 
+		<div id="grouplist">
+		</div>
+	</div>
 </div>
+<div class="tabpage" >
+	<div class="section">
+		<h2>添付ファイルの直接オープン</h2>
+		<input type="checkbox" id="openattachment"><label for="openattachment">添付ファイルをブラウザ内で直接開く</label><br>
+		(画像およびPDFファイルのみ)
+	</div>
+</div>
+<script type="data/template" id="template1">
+<div>
+	<input type="checkbox" id="grp<%=id%>" class="group">
+	<img width="20" height="20" id="icon<%=id%>" alt="<%=groupname%>" class="icon" title="<%=groupname%>">
+	<label for="grp<%=id%>"><%=groupname%></label>
+</div>
+</script>
+<script type="data/template" id="template2">
+<div style="margin-left:1em">
+	<input type="checkbox" id="grp<%=id%>" class="group">
+	<img width="20" height="20" id="icon<%=id%>" alt="<%=groupname%>" class="icon" title="<%=groupname%>">
+	<label for="grp<%=id%>"><%=groupname%></label>
+</div>
+</script>
+<script type="data/template" id="template3">
+<%=folder%>
+</script>
 <script src="sha1.js"></script>
 <script src="oauth.js"></script>
 <script src="util.js"></script>

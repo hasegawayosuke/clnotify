@@ -1,38 +1,23 @@
-var iconCache = (function(){
-    var obj = {};
-    var _icons = {};
-    obj.icon = function( type, id, forceUpdate ){
-        return new Promise( function( resolve, reject ){
-            var url = cl.url + "/api/icon/V2";
-            if( forceUpdate && _icons[ type + ":" + id ] ){
-                window.URL.revokeObjectURL( _icons[ type + ":" + id ] );
-                delete _icons[ type + ":" + id ];
-            }
-            if(  _icons[ type + ":" + id ] !== undefined ){
-                resolve( { id : id, url : _icons[ type + ":" + id ] } );
-            }else{
-                var opt = { type : type };
-                opt[ type ] = id;
-                cl.XHR( "GET", url, opt, function( xhr ){
-                    xhr.responseType = "blob";
-                } ).then( function( xhr ){
-                    if( xhr.response ){
-                        var url = window.URL.createObjectURL( xhr.response );
-                        _icons[ type + ":" + id ] = url;
-                        resolve( { id : id, url : url } );
-                    }else{
-                        reject( new Error( "no group found" ) );
-                    }
-                } );
-            }
-        } );
-    };
-    return obj;
-})();
+_mute = { enabled : false, time : 0 };
+
+function checkMute(){
+	if( _mute.enabled ){
+		var now, d;
+		if( _mute.time == 0 ) return true;
+		now = new Date();
+		d = new Date( _mute.time );
+		if( d > now ) return true;
+		_mute.enabled = false;
+	}
+	return false;
+}
+
+
 
 var notify = (function(){
     var urls = {};
     var audio;
+
 
     chrome.notifications.onButtonClicked.addListener( function( id, index ){
         if( urls[ id ] !== undefined && urls[ id ][ index ] != undefined ){
@@ -55,6 +40,7 @@ var notify = (function(){
 
     return function(){
         /**/
+		if( checkMute() ) return;
         var url = cl.url + "/api/notification/V2";
         if( cl.config.token == "" || cl.config.tokenSecret == "" ){
             console.error( "no access token" );
@@ -88,7 +74,7 @@ var notify = (function(){
                             };
                         }
                         (function( opt, index ){
-                            iconCache.icon( "user", uid ).then( function( icon ){
+                            cl.iconCache.icon( "user", uid ).then( function( icon ){
                                 opt.buttons[ index ].iconUrl = icon.url;
                             } );
                         })( r[ gid ], r[ gid ].buttons.push( { title: topic + " - \n" + summary, iconUrl: chrome.extension.getURL( "/icon16.png" ) } ) -1 );
@@ -104,7 +90,7 @@ var notify = (function(){
                     }
                 } );
                 for( gid in entries ){
-                    iconCache.icon( "group", gid ).then( function( icon ){
+                    cl.iconCache.icon( "group", gid ).then( function( icon ){
                         entries[ icon.id ].iconUrl = icon.url;
                         chrome.notifications.create( icon.id, entries[ icon.id ], function(id){} );
                         if( sound && cl.config.sound ){
@@ -144,7 +130,7 @@ hookHeaderReceived = function(){
                 if( m !== null ){
                     ext = /\.([^\.]+)$/.exec( m[ 1 ] );
                     if( ext !== null ){
-                        if( extensions.indexOf( ext[ 1 ] ) !== -1 ){
+                        if( extensions.indexOf( ext[ 1 ].toLowerCase() ) !== -1 ){
                             headerPair.value = headerPair.value.replace( /^attachment;/i, "inline;" );
                         }
                     }
@@ -166,4 +152,15 @@ cl.load().then( function(){
     notify();
     chrome.alarms.onAlarm.addListener( notify );
     chrome.alarms.create( "cylive_alarm", { "periodInMinutes" : 2 } );
+} );
+
+chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
+	if( sender.id === location.host ){
+		if( typeof( request ) === "string" && request === "?mute" ){
+			sendResponse( { mute : _mute } );
+		}else if( typeof( request ) === "object" && request.mute ){
+			_mute = request.mute;
+		}
+	}
+     sendResponse({farewell: "goodbye"});
 } );

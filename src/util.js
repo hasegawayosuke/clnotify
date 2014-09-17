@@ -18,6 +18,24 @@ var cl = (function (){
     var _loaded = false;
 
     var obj = {
+		html: function( template, param ){
+			htmlEscape = function( s ){
+				return s.replace( /&/g, "&amp;" ).replace( /</g, "&lt;" ).replace( />/g, "&gt;" ).replace( /"/g, "&quot;" ).replace( /'/g, "&#x27" );
+			};
+			if( param === undefined ) param = {};
+			if( template instanceof HTMLElement ){
+				template = template.outerHTML;
+			}
+			return template.replace( /<%([\=\-]?)\s*(.+?)(?:\s*%>)/g, function( str, p1, p2 ){
+				if( p1 == "=" ){
+					return this.htmlEscape( param[ p2 ] !== undefined ? param[ p2 ] : "" );
+				}else if( p1 == "-" ){
+					return param[ p2 ] !== undefined ? param[ p2 ] : "";
+				}else{
+					return p2 !== undefined ? eval( "(" + p2 + ")" ) : "";
+				}
+			} );
+		},
         config : {
             email : "",
             consumerKey : "",
@@ -105,6 +123,37 @@ var cl = (function (){
                 xhr.send( null );
             } );
         },
+		iconCache : (function(){
+			var o = {};
+			var _icons = {};
+			o.icon = function( type, id, forceUpdate ){
+				return new Promise( function( resolve, reject ){
+					var url = cl.url + "/api/icon/V2";
+					if( forceUpdate && _icons[ type + ":" + id ] ){
+						window.URL.revokeObjectURL( _icons[ type + ":" + id ] );
+						delete _icons[ type + ":" + id ];
+					}
+					if(  _icons[ type + ":" + id ] !== undefined ){
+						resolve( { id : id, url : _icons[ type + ":" + id ] } );
+					}else{
+						var opt = { type : type };
+						opt[ type ] = id;
+						cl.XHR( "GET", url, opt, function( xhr ){
+							xhr.responseType = "blob";
+						} ).then( function( xhr ){
+							if( xhr.response ){
+								var url = window.URL.createObjectURL( xhr.response );
+								_icons[ type + ":" + id ] = url;
+								resolve( { id : id, url : url } );
+							}else{
+								reject( new Error( "no group found" ) );
+							}
+						} );
+					}
+				} );
+			};
+			return o;
+		})(),
         tab : function( url, urlToGo ){
             chrome.windows.getAll( {"populate" : true }, function( windowList ){
                 var i, j, tabUrl;
